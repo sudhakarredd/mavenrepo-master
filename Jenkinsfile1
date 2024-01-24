@@ -3,7 +3,7 @@ pipeline {
     environment {
     AWS_ACCESS_KEY_ID = credentials('acceskey')
     AWS_SECRET_ACCESS_KEY = credentials('secreatkey')
-    AAWS_REGION = 'us-east-1'
+    AWS_REGION = 'us-east-1'
     EKS_CLUSTER_NAME = 'eks-1'
     EKS_CLUSTER_VERSION = '1.20'
     EKS_DEPLOYMENT_FILE = 'eks-html-deployment.yaml'
