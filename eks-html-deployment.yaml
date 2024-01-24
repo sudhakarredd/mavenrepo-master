@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: studentapp-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: studentapp
+  template:
+    metadata:
+      labels:
+        app: studentapp
+    spec:
+      containers:
+      - name: studentapp-container
+        image: tomcat:latest
+        ports:
+        - containerPort: 8081
+        volumeMounts:
+        - name: studentapp-war
+          mountPath: /usr/local/tomcat/webapps/studentapp.war
+  volumes:
+  - name: studentapp-war
+    hostPath:
+      path: /var/lib/jenkins/workspace/maven-repo-project/target/studentapp-2.5-SNAPSHOT.war
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: studentapp-service
+spec:
+  selector:
+    app: studentapp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8081
+  type: LoadBalancer
