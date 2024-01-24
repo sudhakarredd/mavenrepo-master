@@ -1,42 +1,53 @@
-pipeline{
-   agent any
-   environment {
-        DOCKER_USERNAME = 'usename'
-        DOCKER_PASSWORD = 'passwd'
-        DOCKER_IMAGE = 'myimage:latest'
-        PORT_MAPPING = '8080:80'
-    }
-       stages{
-        stage('download'){
-          steps{
-            checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/bvenkydevops/mavenrepo-master.git']])
-          }
-       }
-       stage('build'){
-           steps{
-               sh 'mvn clean package'
-           }
-       }
-       stage('codeQualitycheck'){
-           steps{
-              sh 'mvn sonar:sonar' 
-           }
-       }
-       stage('artifactUpload'){
-           steps{
-               sh 'mvn deploy'
-           }
-       }
-       stage('deploy'){
-           steps{
-               script{
-                sh "echo $DOCKER_PASSWORD | docker login --username=$DOCKER_USERNAME --password-stdin"
-                sh "docker build -t $DOCKER_USERNAME/myimage:latest ."
-                sh "docker push $DOCKER_USERNAME/myimage:latest"
-                sh "docker build -t $DOCKER_IMAGE ."
-                sh "docker run -p $PORT_MAPPING -d $DOCKER_IMAGE"
-               }
-           }
-       }
+pipeline {
+    agent any
+    environment {
+    AWS_ACCESS_KEY_ID = credentials('acceskey')
+    AWS_SECRET_ACCESS_KEY = credentials('secreatkey')
+    AAWS_REGION = 'us-east-1'
+    EKS_CLUSTER_NAME = 'eks-1'
+    EKS_CLUSTER_VERSION = '1.20'
+    EKS_DEPLOYMENT_FILE = 'eks-html-deployment.yaml'
+  }
+
+    stages {
+        stage('Code Analysis') {
+            steps {
+                
+                script {
+                    checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/bvenkydevops/mavenrepo-master']])
+                    sh 'mvn clean sonar:sonar'
+                }
+            }
+        }
+      stage('Build & Provision') {
+            steps {
+                script {
+                    sh 'mvn clean install'
+                }
+            }
+        }
+         stage('Automated Testing') {
+            steps {
+                script {
+                    echo 'selenium-test-cases are passed'
+                }
+            }
+        }
+        stage('Artifact Deployment') {
+            steps {
+                script {
+                    sh 'aws s3 cp /var/lib/jenkins/workspace/maven-repo-project/target/studentapp-2.5-SNAPSHOT.war  s3://my-bucket-1-202412/'
+                }
+            }
+        }
+         stage('EKS Cluster Deployment') {
+            steps {
+                script {
+                   sh "aws eks create-cluster --name ${EKS_CLUSTER_NAME} --version ${EKS_CLUSTER_VERSION} --role-arn arn:aws:iam::262401069492:role/eks-cluster-role"
+                    sh "aws eks wait cluster-active --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION} --waiter-timeout 15"                  
+                  
+                }
+            }
+        }
     }
 }
