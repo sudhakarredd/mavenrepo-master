@@ -44,7 +44,7 @@
     </distributionManagement>
   <properties>
   <!-- Other properties -->
-  <sonar.host.url>http://100.26.191.75:9000/</sonar.host.url>
+  <sonar.host.url>http://54.147.197.202:9000/</sonar.host.url>
     <sonar.login>admin</sonar.login>
     <sonar.password>admin</sonar.password>
      <sonar.java.binaries>src/</sonar.java.binaries>
