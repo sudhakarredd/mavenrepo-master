@@ -36,7 +36,8 @@ pipeline {
         stage('Artifact Deployment') {
             steps {
                 script {
-                    sh 'aws s3 cp /var/lib/jenkins/workspace/maven-repo-project/target/studentapp-2.5-SNAPSHOT.war  s3://my-bucket-1-202412/'
+                    sh 'aws s3 mb s3://mybucket-20242501'
+                    sh 'aws s3 cp /var/lib/jenkins/workspace/project-1/target/studentapp-2.5-SNAPSHOT.war s3://mybucket-20242501/'
                 }
             }
         }
