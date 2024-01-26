@@ -3,10 +3,8 @@ pipeline {
     environment {
     AWS_ACCESS_KEY_ID = credentials('acceskey')
     AWS_SECRET_ACCESS_KEY = credentials('secreatkey')
-    AWS_REGION = 'us-east-1'
-    EKS_CLUSTER_NAME = 'eks-1'
-    EKS_CLUSTER_VERSION = '1.20'
-    EKS_DEPLOYMENT_FILE = 'eks-html-deployment.yaml'
+    AWS_REGION = 'ap-south-1'
+    CLUSTER_NAME = 'paraloyal-cluster'
   }
 
     stages {
@@ -36,19 +34,39 @@ pipeline {
         stage('Artifact Deployment') {
             steps {
                 script {
-                    sh 'aws s3 mb s3://mybucket-20242501'
-                    sh 'aws s3 cp /var/lib/jenkins/workspace/project-1/target/studentapp-2.5-SNAPSHOT.war s3://mybucket-20242501/'
+                    sh 'aws  s3 mb s3://mybucket-20242501'
+                    sh 'aws s3 cp /var/lib/jenkins/workspace/project-1/target/studentapp-2.5-SNAPSHOT.war  s3://mybucket-20242501/'
                 }
             }
         }
-         stage('EKS Cluster Deployment') {
+       stage('docker image'){
+           steps{
+               script{
+                  withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
+                       sh 'docker login -u bojjavenkatesh67 -p ${dockerhub}'
+                  }
+                sh 'sudo usermod -aG docker $USER'
+                sh 'sudo chown root:docker /var/run/docker.sock'
+                sh 'sudo chmod 660 /var/run/docker.sock'
+                sh 'docker build -t tomcat:latest .'
+                sh 'docker tag tomcat:latest bojjavenkatesh67/tomcat:latest'
+                sh 'docker push bojjavenkatesh67/tomcat:latest'
+                sh 'docker run --name c1 -d -p 8081:8080 tomcat:latest'
+              
+               }
+           }
+       } 
+       stage('Create EKS Cluster') {
             steps {
                 script {
-                   sh "aws eks create-cluster --name ${EKS_CLUSTER_NAME} --version ${EKS_CLUSTER_VERSION} --role-arn arn:aws:iam::262401069492:role/eks-cluster-role"
-                    sh "aws eks wait cluster-active --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION} --waiter-timeout 15"                  
-                  
+                 
+                    sh "eksctl create cluster --name ${CLUSTER_NAME} --region ${AWS_REGION} --node-type t2.micro --nodes 2"
+                    sh "eksctl utils wait cluster-active --region=${AWS_REGION} --name=${CLUSTER_NAME}"
+                    sh "aws eks --region=${AWS_REGION} update-kubeconfig --name ${CLUSTER_NAME}"
+                    sh "kubectl apply -f tomcat-deployment.yaml"
                 }
             }
         }
+   
     }
 }
