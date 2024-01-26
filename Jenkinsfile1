@@ -62,6 +62,7 @@ pipeline {
                     sh "eksctl utils wait cluster-active --region=${AWS_REGION} --name=${CLUSTER_NAME}"
                     sh "aws eks --region=${AWS_REGION} update-kubeconfig --name ${CLUSTER_NAME}"
                     sh "kubectl apply -f tomcat-deployment.yaml"
+                    sh "kubectl apply -f hpa-tomcat.yaml"
                 }
             }
         }
