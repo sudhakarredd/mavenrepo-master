@@ -12,7 +12,7 @@ pipeline {
             steps {
                 
                 script {
-                    checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/bvenkydevops/mavenrepo-master']])
+                    checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/sudhakarredd/mavenrepo-master.git']])
                     sh 'mvn clean sonar:sonar'
                 }
             }
@@ -34,7 +34,8 @@ pipeline {
         stage('Artifact Deployment') {
             steps {
                 script {
-                    sh 'aws s3 cp /var/lib/jenkins/workspace/maven-repo-project/target/studentapp-2.5-SNAPSHOT.war  s3://my-bucket-1-202412/'
+                   sh 'aws  s3 mb s3://mybucket-20242501'
+                    sh 'aws s3 cp /var/lib/jenkins/workspace/maven-repo-project/target/studentapp-2.5-SNAPSHOT.war  s3://mybucket-20242501/'
                 }
             }
         }
@@ -46,7 +47,6 @@ pipeline {
                     sh "aws eks --region=${AWS_REGION} update-kubeconfig --name ${CLUSTER_NAME}"
                     sh "kubectl apply -f tomcat-deployment.yaml"
                     sh "kubectl apply -f hpa-tomcat.yaml"                  
-                  
                 }
             }
         }
