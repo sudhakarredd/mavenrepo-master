@@ -44,14 +44,14 @@ pipeline {
            steps{
                script{
                   withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
-                       sh 'docker login -u bojjavenkatesh67 -p ${dockerhub}'
+                       sh 'docker login -u sudhakarred1 -p ${dockerhub}'
                   }
                 sh 'sudo usermod -aG docker $USER'
                 sh 'sudo chown root:docker /var/run/docker.sock'
                 sh 'sudo chmod 660 /var/run/docker.sock'
                 sh 'docker build -t tomcat:latest .'
-                sh 'docker tag tomcat:latest bojjavenkatesh67/tomcat:latest'
-                sh 'docker push bojjavenkatesh67/tomcat:latest'
+                sh 'docker tag tomcat:latest sudhakarred1/tomcat:latest'
+                sh 'docker push sudhakarred1/tomcat:latest'
                }
            }
        } 
