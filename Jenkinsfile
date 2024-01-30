@@ -3,7 +3,7 @@ pipeline {
     environment {
     AWS_ACCESS_KEY_ID = credentials('accesskey')
     AWS_SECRET_ACCESS_KEY = credentials('secreatekey')
-    AWS_REGION = 'us-east-1'
+    AWS_REGION = 'us-east-2'
     CLUSTER_NAME = 'paraloyal-cluster'
     
   }
@@ -35,6 +35,7 @@ pipeline {
         stage('Artifact Deployment') {
             steps {
                 script {
+                    sh 'aws  s3 mb s3://myaws-s3-bucket-2024/'
                     sh 'aws s3 cp /var/lib/jenkins/workspace/paraloyal-task-1/target/studentapp-2.5-SNAPSHOT.war  s3://myaws-s3-bucket-2024/'
                 }
             }
