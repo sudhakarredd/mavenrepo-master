@@ -59,7 +59,7 @@ pipeline {
                 script {
                  
                     sh "eksctl create cluster --name ${CLUSTER_NAME} --region ${AWS_REGION} --node-type t2.micro --nodes 2"
-                    sh "eksctl utils wait cluster-active --region=${AWS_REGION} --name=${CLUSTER_NAME}"
+                    sh "eksctl get cluster --region=${AWS_REGION} --name=${CLUSTER_NAME}"
                     sh "aws eks --region=${AWS_REGION} update-kubeconfig --name ${CLUSTER_NAME}"
                     sh "kubectl apply -f tomcat-deployment.yaml"
                     sh "kubectl apply -f hpa-tomcat.yaml"
