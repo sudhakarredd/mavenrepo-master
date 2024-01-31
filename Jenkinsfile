@@ -1,12 +1,13 @@
 pipeline {
     agent any
-    environment {
-    AWS_ACCESS_KEY_ID = credentials('accesskey')
-    AWS_SECRET_ACCESS_KEY = credentials('secreatekey')
-    AWS_REGION = 'us-east-2'
-    CLUSTER_NAME = 'paraloyal-cluster'
     
-  }
+  environment {
+    AWS_ACCESS_KEY_ID = credentials('Accesskey')
+    AWS_SECRET_ACCESS_KEY = credentials('SecretKey')
+    AWS_REGION = 'us-east-2'
+    CLUSTER_NAME = 'cluster-paraloyal'
+    
+    }
 
     stages {
         stage('Code Analysis') {
@@ -14,11 +15,11 @@ pipeline {
                 
                 script {
                     checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/sudhakarredd/mavenrepo-master.git']])
-                    sh 'mvn clean sonar:sonar'
+                    sh 'mvn clean sonar:sonar'  
                 }
             }
         }
-      stage('Build & Provision') {
+        stage('Build & Provision') {
             steps {
                 script {
                     sh 'mvn clean install'
@@ -32,29 +33,31 @@ pipeline {
                 }
             }
         }
-        stage('Artifact Deployment') {
+         stage('Artifact Deployment') {
             steps {
                 script {
-                    sh 'aws  s3 mb s3://myaws-s3-bucket-2024/'
-                    sh 'aws s3 cp /var/lib/jenkins/workspace/paraloyal-task-1/target/studentapp-2.5-SNAPSHOT.war  s3://myaws-s3-bucket-2024/'
+                    
+                    sh 'aws  s3 mb s3://mys3-bucket-29012024/'
+                    sh 'aws s3 cp /var/lib/jenkins/workspace/task-1/target/studentapp-2.5-SNAPSHOT.war s3://mys3-bucket-29012024/'
+                    
                 }
             }
-        }
+        } 
         stage('docker image'){
            steps{
                script{
-                  withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
-                       sh 'docker login -u sudhakarred1 -p ${dockerhub}'
+                 withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
+                  sh 'docker login -u sudhakarred1 -p ${dockerhub}'
                   }
                 sh 'sudo usermod -aG docker $USER'
                 sh 'sudo chown root:docker /var/run/docker.sock'
-                sh 'sudo chmod 660 /var/run/docker.sock'
+                sh 'sudo chmod 666 /var/run/docker.sock'
                 sh 'docker build -t tomcat:latest .'
                 sh 'docker tag tomcat:latest sudhakarred1/tomcat:latest'
                 sh 'docker push sudhakarred1/tomcat:latest'
                }
            }
-       } 
+       }    
        stage('Create EKS Cluster') {
             steps {
                 script {
@@ -67,6 +70,5 @@ pipeline {
                 }
             }
         }
-   
     }
 }
