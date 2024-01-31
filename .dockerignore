@@ -1,2 +1,2 @@
 # .dockerignore
-var/
+./var/lib/jenkins/workspace/task-1/target/studentapp-2.5-SNAPSHOT.war
