@@ -1,5 +1,4 @@
 FROM tomcat:latest
-WORKDIR /app
-COPY  /var/lib/jenkins/workspace/task-1/target/studentapp-2.5-SNAPSHOT.war /usr/local/tomcat/webapps/
+COPY /target/studentapp-2.5-SNAPSHOT.war /usr/local/tomcat/webapps/ROOT.war
 EXPOSE 8081
 CMD ["catalina.sh", "run"]
